@@ -31,6 +31,12 @@ There's also a Chrome extension included if you prefer quick one-click access fr
 
 Here's the fun part: most of this project came together in about 30 minutes. I started with a clear plan of what I wanted—an RSS feed that podcast apps could understand, pointing to Digg's existing audio files—and used GitHub Copilot to help implement it. Having a well-defined goal made all the difference; Copilot handled the boilerplate while I focused on the logic.
 
+### Playing with GitHub Pages and Actions
+
+Part of the motivation here was exploring what you can automate and host for free using GitHub's tooling. GitHub Actions runs the daily feed updates on a schedule—no server to manage, no cron job to babysit. GitHub Pages hosts the RSS feed itself as a static file. For proof-of-concept work like this, it's a fantastic setup: zero hosting costs, minimal maintenance, and everything lives in the repo.
+
+If you've been curious about what's possible with Actions and Pages beyond static sites, this kind of project is a great way to experiment.
+
 ### Important Notes
 
 This is an **unofficial, community-created** project—I'm not affiliated with Digg. The tool doesn't create or host any audio content; it simply wraps publicly available audio files into an RSS format. All the actual AI-generated content is produced and hosted by Digg.
