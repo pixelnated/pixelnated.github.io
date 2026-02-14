@@ -57,7 +57,8 @@ Site builds to `_site/` (gitignored). Preview at `http://localhost:4000`.
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| [fix-broken-links.yml](.github/workflows/fix-broken-links.yml) | Weekly (Sunday 6AM UTC) or manual | Scans posts for broken external links and replaces with Wayback Machine archives |
+| [fix-broken-links.yml](.github/workflows/fix-broken-links.yml) | Push to `_posts/`, weekly, or manual | Scans posts for broken external links and replaces with Wayback Machine archives |
+| [scheduled-rebuild.yml](.github/workflows/scheduled-rebuild.yml) | Weekly (Sunday 7AM UTC) or manual | Forces a site rebuild to pick up posts added directly via GitHub |
 
 The link fixer script at [.github/scripts/fix_broken_links.py](.github/scripts/fix_broken_links.py):
 - Skips common social/video sites to avoid false positives

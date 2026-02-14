@@ -1,0 +1,23 @@
+name: Scheduled Site Rebuild
+
+on:
+  schedule:
+    - cron: '0 7 * * 0'  # Weekly on Sunday at 7 AM UTC (after link fixer)
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger GitHub Pages rebuild
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit --allow-empty -m "chore: scheduled site rebuild"
+          git push
