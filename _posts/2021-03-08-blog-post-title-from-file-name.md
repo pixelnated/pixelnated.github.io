@@ -1,14 +1,10 @@
-## Blog Post Title From First Header
+## lots of fun with pixlnated - dumb idea playground
 
-Due to a plugin called `jekyll-titles-from-headings` which is supported by GitHub Pages by default. The above header (in the markdown file) will be automatically used as the pages title.
-
-If the file does not start with a header, then the post title will be derived from the filename.
-
-This is a sample blog post. You can talk about all sorts of fun things here.
+This is just a place for me to test out ideas, no matter how bad and or share things I find cool.  Music and geekery a-go-go.
 
 ---
 
-### This is a header
+### Sample syntax highlighting for testing
 
 #### Some T-SQL Code
 
