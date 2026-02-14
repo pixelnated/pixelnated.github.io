@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Scan markdown posts for broken external links and replace them with Wayback Machine archives.
+Also restores original links if they become working again.
+
+Format for archived links:
+  [link text](wayback_url)<!-- original: https://original.url -->
 """
 
 import re
@@ -10,7 +14,15 @@ from pathlib import Path
 import requests
 
 POSTS_DIR = Path("_posts")
+
+# Pattern for regular markdown links
 LINK_PATTERN = re.compile(r'\[([^\]]+)\]\((https?://[^)]+)\)')
+
+# Pattern for archived links with original URL comment
+ARCHIVED_PATTERN = re.compile(
+    r'\[([^\]]+)\]\((https?://web\.archive\.org/[^)]+)\)<!-- original: (https?://[^\s]+) -->'
+)
+
 WAYBACK_API = "https://archive.org/wayback/available"
 
 # Skip these domains (usually reliable or cause false positives)
@@ -58,16 +70,42 @@ def should_skip_url(url: str) -> bool:
     return False
 
 
-def process_file(filepath: Path) -> list[tuple[str, str]]:
-    """Process a single markdown file, returning list of (original, replacement) tuples."""
-    content = filepath.read_text(encoding="utf-8")
+def check_and_restore_archived_links(content: str) -> tuple[str, int]:
+    """Check archived links and restore originals if now working."""
+    restored_count = 0
+    
+    for match in ARCHIVED_PATTERN.finditer(content):
+        link_text = match.group(1)
+        wayback_url = match.group(2)
+        original_url = match.group(3)
+        
+        print(f"  Checking archived original: {original_url}")
+        
+        if not is_link_broken(original_url):
+            print(f"  🔄 Restored (now working): {original_url}")
+            archived_link = f"[{link_text}]({wayback_url})<!-- original: {original_url} -->"
+            restored_link = f"[{link_text}]({original_url})"
+            content = content.replace(archived_link, restored_link)
+            restored_count += 1
+        else:
+            print(f"  ⏸️  Still broken, keeping archive")
+        
+        time.sleep(1)
+    
+    return content, restored_count
+
+
+def check_and_archive_broken_links(content: str) -> tuple[str, int]:
+    """Check regular links and archive broken ones."""
+    archived_count = 0
     replacements = []
     
     for match in LINK_PATTERN.finditer(content):
         link_text = match.group(1)
         url = match.group(2)
         
-        if should_skip_url(url):
+        # Skip if already an archive link or in skip list
+        if should_skip_url(url) or "web.archive.org" in url:
             continue
         
         print(f"  Checking: {url}")
@@ -77,17 +115,39 @@ def process_file(filepath: Path) -> list[tuple[str, str]]:
             wayback_url = get_wayback_url(url)
             
             if wayback_url:
-                print(f"  ✅ Found archive: {wayback_url}")
+                print(f"  ✅ Archived: {wayback_url}")
                 original = f"[{link_text}]({url})"
-                replacement = f"[{link_text}]({wayback_url})"
+                # Store original URL in HTML comment for future restoration
+                replacement = f"[{link_text}]({wayback_url})<!-- original: {url} -->"
                 replacements.append((original, replacement))
             else:
                 print(f"  ❌ No archive found for: {url}")
         
-        # Rate limiting to be nice to servers
         time.sleep(1)
     
-    return replacements
+    for original, replacement in replacements:
+        content = content.replace(original, replacement)
+        archived_count += 1
+    
+    return content, archived_count
+
+
+def process_file(filepath: Path) -> tuple[int, int]:
+    """Process a single markdown file. Returns (archived_count, restored_count)."""
+    content = filepath.read_text(encoding="utf-8")
+    original_content = content
+    
+    # First, check if any archived links can be restored
+    content, restored_count = check_and_restore_archived_links(content)
+    
+    # Then, check for new broken links to archive
+    content, archived_count = check_and_archive_broken_links(content)
+    
+    # Only write if content changed
+    if content != original_content:
+        filepath.write_text(content, encoding="utf-8")
+    
+    return archived_count, restored_count
 
 
 def main():
@@ -96,22 +156,23 @@ def main():
         print(f"Posts directory not found: {POSTS_DIR}")
         return
     
-    total_fixes = 0
+    total_archived = 0
+    total_restored = 0
     
     for filepath in POSTS_DIR.glob("*.md"):
         print(f"\nProcessing: {filepath.name}")
-        replacements = process_file(filepath)
+        archived, restored = process_file(filepath)
+        total_archived += archived
+        total_restored += restored
         
-        if replacements:
-            content = filepath.read_text(encoding="utf-8")
-            for original, replacement in replacements:
-                content = content.replace(original, replacement)
-            filepath.write_text(content, encoding="utf-8")
-            total_fixes += len(replacements)
-            print(f"  Fixed {len(replacements)} link(s)")
+        if archived:
+            print(f"  📦 Archived {archived} broken link(s)")
+        if restored:
+            print(f"  🔄 Restored {restored} working link(s)")
     
     print(f"\n{'='*50}")
-    print(f"Total links fixed: {total_fixes}")
+    print(f"Total archived: {total_archived}")
+    print(f"Total restored: {total_restored}")
 
 
 if __name__ == "__main__":

@@ -59,7 +59,11 @@ Site builds to `_site/` (gitignored). Preview at `http://localhost:4000`.
 |----------|---------|---------|
 | [fix-broken-links.yml](.github/workflows/fix-broken-links.yml) | Weekly (Sunday 6AM UTC) or manual | Scans posts for broken external links and replaces with Wayback Machine archives |
 
-The link fixer script at [.github/scripts/fix_broken_links.py](.github/scripts/fix_broken_links.py) skips common social/video sites to avoid false positives and creates a PR for review.
+The link fixer script at [.github/scripts/fix_broken_links.py](.github/scripts/fix_broken_links.py):
+- Skips common social/video sites to avoid false positives
+- Stores original URLs in HTML comments: `[text](wayback_url)<!-- original: url -->`
+- Automatically restores links if the original URL starts working again
+- Auto-commits changes directly to `main`
 
 ## File Conventions
 

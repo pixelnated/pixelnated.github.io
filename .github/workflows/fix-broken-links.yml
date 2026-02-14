@@ -27,15 +27,9 @@ jobs:
       - name: Check and fix broken links
         run: python .github/scripts/fix_broken_links.py
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: "fix: replace broken links with Wayback Machine archives"
-          title: "🔗 Fix broken external links"
-          body: |
-            This PR automatically replaces broken external links with archived versions from the Wayback Machine.
-            
-            Please review the changes to ensure the archived versions are appropriate.
-          branch: fix-broken-links
-          delete-branch: true
-          labels: automated
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git diff --quiet || (git add -A && git commit -m "fix: update broken/restored links via Wayback Machine")
+          git push || echo "Nothing to push"
