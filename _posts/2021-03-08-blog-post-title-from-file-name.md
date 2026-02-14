@@ -1,4 +1,4 @@
-## lots of fun with pixlnated - dumb idea playground
+## lots of fun with pixelnated - dumb idea playground
 
 This is just a place for me to test out ideas, no matter how bad and or share things I find cool.  Music and geekery a-go-go.
 
